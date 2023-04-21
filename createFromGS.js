@@ -6,7 +6,8 @@ const {
   getDataGS,
   getGP,
   appendAllRecordCSV,
-  makeCsvRecord
+  makeCsvRecord,
+  getDate2
 } = require('./utils.js')
 
 const gsDate = process.env.GS_DATE || ''
@@ -19,19 +20,19 @@ const main = async () => {
   if (!gsDate) return console.log('No Date!')
 
   let cohorts = []
-  if (amas === 'jeremy') {
-    cohorts = ['ET-C', 'ET-D', 'PT-C', 'PT-D', 'PT-E']
-  }
-  if (amas === 'sam') {
-    cohorts = ['ET-A', 'ET-B', 'ET-E', 'CT-A', 'CT-B', 'PT-A', 'PT-B']
-  }
+
+  amas === 'jeremy'
+    ? (cohorts = ['ET-C', 'ET-D', 'PT-C', 'PT-D', 'PT-E'])
+    : amas === 'sam'
+    ? (cohorts = ['ET-A', 'ET-B', 'ET-E', 'CT-A', 'CT-B', 'PT-A', 'PT-B'])
+    : null
 
   const token = await getToken()
   const user = await getGP(token)
-  const me = user.emailAddress.slice(0, user.emailAddress.indexOf('@'))
+  // const me = user.emailAddress.slice(0, user.emailAddress.indexOf('@'))
   //console.log(me)
 
-  // grab file and get data - change to desired week's date
+  // grab file and get data - change to desired week's date in env
   console.log('getting file!')
 
   const file = await getDFile(gsDate)
@@ -41,47 +42,43 @@ kind: ${file.kind}
 id: ${file.id}
 name: ${file.name}
   `)
+  // exit early if no file found
   if (!file) return console.log('NO FILE FOUND!')
 
   // create query object
-  const data = cohorts.map(async (cohort) => {
-    const ssQuery = {
+  const data = cohorts.map((cohort) =>
+    getDataGS({
       spreadsheetId: file.id,
       sheetName: cohort,
       firstCol: 'A',
       lastCol: 'I'
-    }
-    const promises = getDataGS(ssQuery)
-    return promises
-  })
-  // console.log(data)
+    })
+  )
+  // take promises and convert to entries, then flatten
   const entriesArray = await Promise.all(data)
   const entries = entriesArray.flat(1)
-  if (entries.length) console.log('\nFirst List\n', entries[0])
 
-  const allRecords = await makeCsvRecord({ data: entries[0] })
-  allRecords
+  // if (entries.length) console.log('\nFirst List\n', entries[0])
+
+  ;(await makeCsvRecord({ data: entries[0] }))
     ? console.log('writing allRecords import file successful!')
     : console.log('allRecords aready existed')
-
-  const class1 = await makeCsvRecord({
+  ;(await makeCsvRecord({
     classDay: 'class1',
     data: { sName: 'sName', c1Status: 'c1Status', date: 'date', cohort: 'cohort' }
-  })
-  class1 ? console.log('writing c1 import file successful!') : console.log('c1 aready existed')
-
-  const class2 = await makeCsvRecord({
+  }))
+    ? console.log('writing c1 import file successful!')
+    : console.log('c1 aready existed')
+  ;(await makeCsvRecord({
     classDay: 'class2',
     data: { sName: 'sName', c2Status: 'c2Status', date: 'date', cohort: 'cohort' }
-  })
-  class2 ? console.log('writing c2 import file successful!') : console.log('c2 aready existed')
+  }))
+    ? console.log('writing c2 import file successful!')
+    : console.log('c2 aready existed')
 
   entries.forEach(async (entry) => {
     const c1 = gsDate
-    const c2 = gsDate
-      .split('-')
-      .map((n, i) => (i == 1 ? Number(n) + 3 : Number(n)))
-      .join('-')
+    const c2 = getDate2(gsDate)
 
     const {
       cohort,
@@ -108,49 +105,25 @@ name: ${file.name}
       date: c2,
       cohort
     }
+    const c1Match = c1s !== 'Attended' && c1s !== 'No Status'
+    const c2Match = c2s !== 'Attended' && c2s !== 'No Status'
 
-    if (c1s !== 'Attended' && c1s !== 'No Status') {
-      const check = await appendAllRecordCSV({ classDay: 'class1', data: absRecC1 })
-
-      check ? console.log('Appended class 1 records') : console.log('did not append')
+    if (c1Match) {
+      ;(await appendAllRecordCSV({ classDay: 'class1', data: absRecC1 }))
+        ? console.log('Appended class 1 records')
+        : console.log('did not append')
     }
 
-    if (c2s !== 'Attended' && c2s !== 'No Status') {
-      const check = await appendAllRecordCSV({ classDay: 'class2', data: absRecC2 })
-
-      check ? console.log('Appended class 2 records') : console.log('did not append')
+    if (c2Match) {
+      ;(await appendAllRecordCSV({ classDay: 'class2', data: absRecC2 }))
+        ? console.log('Appended class 2 records')
+        : console.log('did not append')
     }
 
-    const checkAll = await appendAllRecordCSV({ data: entry })
-    checkAll
+    ;(await appendAllRecordCSV({ data: entry }))
       ? console.log('Finished appending to allRecords')
       : console.log(`entry of ${entry['Student Name']} failed to be appended`)
   })
 }
 
 main()
-
-//Draft Object
-// {
-//   "id": string,
-//   "message": {
-//     object (Message)
-//   }
-// }
-
-// Message object
-// {
-//   "id": string,
-//   "threadId": string,
-//   "labelIds": [
-//     string
-//   ],
-//   "snippet": string,
-//   "historyId": string,
-//   "internalDate": string,
-//   "payload": {
-//     object (MessagePart)
-//   },
-//   "sizeEstimate": integer,
-//   "raw": string
-// }

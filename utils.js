@@ -176,6 +176,9 @@ const appendAllRecordCSV = async ({ classDay, data }) => {
   return oneHash !== twoHash
 }
 
+const dateMapCB = (n, i) => (i == 1 ? Number(n) + 3 : Number(n))
+const getDate2 = (date) => date.split('-').map(dateMapCB).join('-')
+
 module.exports = {
   getConfig,
   getToken,
@@ -183,5 +186,6 @@ module.exports = {
   getDFile,
   getDataGS,
   appendAllRecordCSV,
-  makeCsvRecord
+  makeCsvRecord,
+  getDate2
 }
