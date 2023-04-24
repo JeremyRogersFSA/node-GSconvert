@@ -5,9 +5,9 @@ const {
   getDFile,
   getDataGS,
   getGP,
-  appendAllRecordCSV,
-  makeCsvRecord,
-  getDate2
+  makeRecordLoop,
+  appendLoop,
+  getDataGSTest
 } = require('./utils.js')
 
 const gsDate = process.env.GS_DATE || ''
@@ -45,6 +45,15 @@ name: ${file.name}
   // exit early if no file found
   if (!file) return console.log('NO FILE FOUND!')
 
+  const cybFile = await getDFile(gsDate, false)
+  if (cybFile)
+    console.log(`
+kind: ${cybFile.kind}
+id: ${cybFile.id}
+name: ${cybFile.name}
+`)
+  if (!cybFile) return console.log('NO CYBER FILE FOUND!')
+
   // create query object
   const data = cohorts.map((cohort) =>
     getDataGS({
@@ -54,76 +63,28 @@ name: ${file.name}
       lastCol: 'I'
     })
   )
+  data.push(
+    getDataGS(
+      {
+        spreadsheetId: cybFile.id,
+        sheetName: gsDate.slice(0, gsDate.lastIndexOf('-')),
+        firstCol: 'A',
+        lastCol: 'I'
+      },
+      false
+    )
+  )
   // take promises and convert to entries, then flatten
   const entriesArray = await Promise.all(data)
   const entries = entriesArray.flat(1)
 
   // if (entries.length) console.log('\nFirst List\n', entries[0])
 
-  ;(await makeCsvRecord({ data: entries[0] }))
-    ? console.log('writing allRecords import file successful!')
-    : console.log('allRecords aready existed')
-  ;(await makeCsvRecord({
-    classDay: 'class1',
-    data: { sName: 'sName', c1Status: 'c1Status', date: 'date', cohort: 'cohort' }
-  }))
-    ? console.log('writing c1 import file successful!')
-    : console.log('c1 aready existed')
-  ;(await makeCsvRecord({
-    classDay: 'class2',
-    data: { sName: 'sName', c2Status: 'c2Status', date: 'date', cohort: 'cohort' }
-  }))
-    ? console.log('writing c2 import file successful!')
-    : console.log('c2 aready existed')
+  await makeRecordLoop(entries)
 
-  entries.forEach(async (entry) => {
-    const c1 = gsDate
-    const c2 = getDate2(gsDate)
-
-    const {
-      cohort,
-      'Student Name': sName,
-      Class1: c1s,
-      Class2: c2s,
-      OSPC1A,
-      OSPC2A,
-      OSPC1B,
-      OSPC2B,
-      OSPT,
-      OSPF
-    } = entry
-
-    const absRecC1 = {
-      sName,
-      c1Status: c1s,
-      date: c1,
-      cohort
-    }
-    const absRecC2 = {
-      sName,
-      c2Status: c2s,
-      date: c2,
-      cohort
-    }
-    const c1Match = c1s !== 'Attended' && c1s !== 'No Status'
-    const c2Match = c2s !== 'Attended' && c2s !== 'No Status'
-
-    if (c1Match) {
-      ;(await appendAllRecordCSV({ classDay: 'class1', data: absRecC1 }))
-        ? console.log('Appended class 1 records')
-        : console.log('did not append')
-    }
-
-    if (c2Match) {
-      ;(await appendAllRecordCSV({ classDay: 'class2', data: absRecC2 }))
-        ? console.log('Appended class 2 records')
-        : console.log('did not append')
-    }
-
-    ;(await appendAllRecordCSV({ data: entry }))
-      ? console.log('Finished appending to allRecords')
-      : console.log(`entry of ${entry['Student Name']} failed to be appended`)
-  })
+  appendLoop(entries)
 }
 
 main()
+
+// getDataGSTest()

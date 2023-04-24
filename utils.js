@@ -57,15 +57,16 @@ const getGP = async (token) => {
   }
 }
 
-const getDFile = async (date) => {
+const getDFile = async (date, isWeb = true) => {
   const svcDrive = google.drive({ version: 'v3', auth: oAuth2Client })
   try {
+    const searchString = isWeb ? `U-ATT-${date}` : '2302-ACC-MT-CYB-PT-A'
     const {
       data: {
         files: [file]
       }
     } = await svcDrive.files.list({
-      q: `name contains 'U-Att-${date}'`,
+      q: `name contains '${searchString}'`,
       spaces: 'drive'
     })
 
@@ -75,7 +76,7 @@ const getDFile = async (date) => {
   }
 }
 
-const getDataGS = async (ssQuery) => {
+const getDataGS = async (ssQuery, isWeb = true) => {
   // console.log(ssQuery)
 
   const { spreadsheetId, sheetName, firstCol, lastCol } = ssQuery
@@ -98,10 +99,12 @@ const getDataGS = async (ssQuery) => {
     const keys = values[0]
     if (i === 0 || !c[0]) return a
 
-    const cohort = sheetName
-      .split('-')
-      .map((seg, j) => (j == 0 ? `2302-ACC-${seg}` : `-WEB-PT-${seg}`))
-      .join('')
+    const cohort = isWeb
+      ? sheetName
+          .split('-')
+          .map((seg, j) => (j == 0 ? `2302-ACC-${seg}` : `-WEB-PT-${seg}`))
+          .join('')
+      : '2302-ACC-MT-CYB-PT-A'
     const entry = { cohort }
     keys.forEach((key, idx) => (entry[key] = c[idx]))
     a.push(entry)
@@ -155,7 +158,25 @@ const makeCsvRecord = async ({ classDay, data }) => {
   return fileTestTwo
 }
 
-// createFromGS.js
+const makeRecordLoop = async (entries) => {
+  ;(await makeCsvRecord({ data: entries[0] }))
+    ? console.log('writing allRecords import file successful!')
+    : console.log('allRecords aready existed')
+  ;(await makeCsvRecord({
+    classDay: 'class1',
+    data: { sName: 'sName', c1Status: 'c1Status', date: 'date', cohort: 'cohort' }
+  }))
+    ? console.log('writing c1 import file successful!')
+    : console.log('c1 aready existed')
+  ;(await makeCsvRecord({
+    classDay: 'class2',
+    data: { sName: 'sName', c2Status: 'c2Status', date: 'date', cohort: 'cohort' }
+  }))
+    ? console.log('writing c2 import file successful!')
+    : console.log('c2 aready existed')
+}
+
+// createFromGS.js append records
 const appendAllRecordCSV = async ({ classDay, data }) => {
   const filePath = `${classDay ? 'classes' : 'allRecords'}-${gsDate}.csv`
 
@@ -176,8 +197,89 @@ const appendAllRecordCSV = async ({ classDay, data }) => {
   return oneHash !== twoHash
 }
 
+// appending loop below
 const dateMapCB = (n, i) => (i == 1 ? Number(n) + 3 : Number(n))
 const getDate2 = (date) => date.split('-').map(dateMapCB).join('-')
+
+const appendLoop = (entries) => {
+  entries.forEach(async (entry) => {
+    const c1 = gsDate
+    const c2 = getDate2(gsDate)
+
+    const {
+      cohort,
+      'Student Name': sName,
+      Class1: c1s,
+      Class2: c2s,
+      OSPC1A,
+      OSPC2A,
+      OSPC1B,
+      OSPC2B,
+      OSPT,
+      OSPF
+    } = entry
+
+    const absRecC1 = {
+      sName,
+      c1Status: c1s,
+      date: c1,
+      cohort
+    }
+    const absRecC2 = {
+      sName,
+      c2Status: c2s,
+      date: c2,
+      cohort
+    }
+    const c1Match = c1s !== 'Attended' && c1s !== 'No Status'
+    const c2Match = c2s !== 'Attended' && c2s !== 'No Status'
+
+    if (c1Match) {
+      ;(await appendAllRecordCSV({ classDay: 'class1', data: absRecC1 }))
+        ? console.log('Appended class 1 records')
+        : console.log('did not append')
+    }
+
+    if (c2Match) {
+      ;(await appendAllRecordCSV({ classDay: 'class2', data: absRecC2 }))
+        ? console.log('Appended class 2 records')
+        : console.log('did not append')
+    }
+
+    ;(await appendAllRecordCSV({ data: entry }))
+      ? console.log('Finished appending to allRecords')
+      : console.log(`entry of ${entry['Student Name']} failed to be appended`)
+  })
+}
+
+// Testing for cyber only
+async function getDataGSTest() {
+  const cybFile = await getDFile(gsDate, false)
+  if (cybFile)
+    console.log(`
+kind: ${cybFile.kind}
+id: ${cybFile.id}
+name: ${cybFile.name}
+`)
+  if (!cybFile) return console.log('NO CYBER FILE FOUND!')
+  const date = gsDate.slice(0, gsDate.lastIndexOf('-'))
+  const testPromise = getDataGS(
+    {
+      spreadsheetId: cybFile.id,
+      sheetName: date,
+      firstCol: 'A',
+      lastCol: 'I'
+    },
+    false
+  )
+  console.log(testPromise)
+  const testEntry = await Promise.all([testPromise])
+  const entries = testEntry.flat(1)
+
+  console.log(entries)
+  await makeRecordLoop(entries)
+  appendLoop(entries)
+}
 
 module.exports = {
   getConfig,
@@ -187,5 +289,8 @@ module.exports = {
   getDataGS,
   appendAllRecordCSV,
   makeCsvRecord,
-  getDate2
+  getDate2,
+  appendLoop,
+  makeRecordLoop,
+  getDataGSTest
 }
