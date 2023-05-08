@@ -1,30 +1,30 @@
 const { google } = require('googleapis')
-const { writeFileSync, statSync, readFileSync, appendFileSync, existsSync } = require('fs')
+const { writeFileSync, appendFileSync } = require('fs')
 const { readFile } = require('fs').promises
 const crypto = require('node:crypto')
 
 const gsDate = process.env.GS_DATE
 
-// Google helper
-const getConfig = (method, token) => {
-  return {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  }
-}
 
 const oAuth2Client = new google.auth.OAuth2(
   process.env.CLIENT_ID,
   process.env.CLIENT_SECRET,
   process.env.REDIRECT_URI
-)
+  )
+  
+  oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN })
+  
+  // google helpers
+  const getConfig = (method, token) => {
+    return {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  }
 
-oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN })
-
-// google helpers
 const getToken = async () => {
   const { token } = await oAuth2Client.getAccessToken()
   // console.log(token)
@@ -211,12 +211,12 @@ const appendLoop = (entries) => {
       'Student Name': sName,
       Class1: c1s,
       Class2: c2s,
-      OSPC1A,
-      OSPC2A,
-      OSPC1B,
-      OSPC2B,
-      OSPT,
-      OSPF
+      // OSPC1A,
+      // OSPC2A,
+      // OSPC1B,
+      // OSPC2B,
+      // OSPT,
+      // OSPF
     } = entry
 
     const absRecC1 = {
@@ -231,8 +231,8 @@ const appendLoop = (entries) => {
       date: c2,
       cohort
     }
-    const c1Match = c1s !== 'Attended' && c1s !== 'No Status'
-    const c2Match = c2s !== 'Attended' && c2s !== 'No Status'
+    const c1Match = c1s !== 'Attended' && c1s !== 'No Status' && c1s !== ''
+    const c2Match = c2s !== 'Attended' && c2s !== 'No Status' && c2s !== ''
 
     if (c1Match) {
       ;(await appendAllRecordCSV({ classDay: 'class1', data: absRecC1 }))
@@ -253,33 +253,33 @@ const appendLoop = (entries) => {
 }
 
 // Testing for cyber only
-async function getDataGSTest() {
-  const cybFile = await getDFile(gsDate, false)
-  if (cybFile)
-    console.log(`
-kind: ${cybFile.kind}
-id: ${cybFile.id}
-name: ${cybFile.name}
-`)
-  if (!cybFile) return console.log('NO CYBER FILE FOUND!')
-  const date = gsDate.slice(0, gsDate.lastIndexOf('-'))
-  const testPromise = getDataGS(
-    {
-      spreadsheetId: cybFile.id,
-      sheetName: date,
-      firstCol: 'A',
-      lastCol: 'I'
-    },
-    false
-  )
-  console.log(testPromise)
-  const testEntry = await Promise.all([testPromise])
-  const entries = testEntry.flat(1)
+// async function getDataGSTest() {
+//   const cybFile = await getDFile(gsDate, false)
+//   if (cybFile)
+//     console.log(`
+// kind: ${cybFile.kind}
+// id: ${cybFile.id}
+// name: ${cybFile.name}
+// `)
+//   if (!cybFile) return console.log('NO CYBER FILE FOUND!')
+//   const date = gsDate.slice(0, gsDate.lastIndexOf('-'))
+//   const testPromise = getDataGS(
+//     {
+//       spreadsheetId: cybFile.id,
+//       sheetName: date,
+//       firstCol: 'A',
+//       lastCol: 'I'
+//     },
+//     false
+//   )
+//   console.log(testPromise)
+//   const testEntry = await Promise.all([testPromise])
+//   const entries = testEntry.flat(1)
 
-  console.log(entries)
-  await makeRecordLoop(entries)
-  appendLoop(entries)
-}
+//   console.log(entries)
+//   await makeRecordLoop(entries)
+//   appendLoop(entries)
+// }
 
 module.exports = {
   getConfig,
@@ -292,5 +292,5 @@ module.exports = {
   getDate2,
   appendLoop,
   makeRecordLoop,
-  getDataGSTest
+  // getDataGSTest
 }

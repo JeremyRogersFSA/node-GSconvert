@@ -7,7 +7,7 @@ const {
   getGP,
   makeRecordLoop,
   appendLoop,
-  getDataGSTest
+  // getDataGSTest
 } = require('./utils.js')
 
 const gsDate = process.env.GS_DATE || ''
