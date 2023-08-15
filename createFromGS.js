@@ -1,5 +1,5 @@
 require('dotenv').config()
-// const express = require('express')
+
 const {
   getToken,
   getGP,
@@ -15,7 +15,6 @@ const main = async () => {
   // const me = user.emailAddress.slice(0, user.emailAddress.indexOf('@'))
   //console.log(me)
 
-  // grab file and get data - change to desired week's date in env
   console.log('getting file!')
 
   const file = await getDFile()
