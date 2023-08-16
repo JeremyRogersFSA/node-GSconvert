@@ -215,7 +215,7 @@ const generateEmails = async (entries) => {
     const isOverAbsences = absenceRem < 0
 
     if (isOverAbsences) {
-      console.log(`creating overAbsences email to ${sName}`)
+      console.log(`start overAbsences to ${sName} in ${cohort}`)
       // console.log(absences)
       // console.log(absent.at(-1))
       // over absences allottment
@@ -237,9 +237,9 @@ const generateEmails = async (entries) => {
       const raw = Buffer.from(message).toString('base64')
       await createDraft(raw, gmail, cohort)
       emails++
-      console.log(`isOverAbsences email to ${sName} created`)
+      console.log(`end isOverAbsences to ${sName} in ${cohort}`)
     } else if (isRecent) {
-      console.log(`creating normal absences email to ${sName}`)
+      console.log(`start absences to ${sName} in ${cohort}`)
       // console.log(absences, absent.at(-1))
       // normal message about absences
       const message = [
@@ -262,7 +262,7 @@ const generateEmails = async (entries) => {
       const raw = Buffer.from(message).toString('base64')
       await createDraft(raw, gmail, cohort)
       emails++
-      console.log(`Normal Absence email to ${sName} created`)
+      console.log(`start absences to ${sName} in ${cohort}`)
     }
   }
   console.log(`generating ${emails} emails`)
