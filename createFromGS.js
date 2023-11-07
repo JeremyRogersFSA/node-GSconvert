@@ -1,13 +1,11 @@
-require('dotenv').config()
-
-const {
+import {
   getToken,
   getGP,
   getDFile,
   getDataGS,
   filterAndFormatEntries,
   generateEmails
-} = require('./utils.js')
+} from './utils.js'
 
 const main = async () => {
   const token = await getToken()
@@ -30,15 +28,17 @@ const main = async () => {
   // create query object
   const data = await getDataGS({
     spreadsheetId: file.id,
-    sheetName: 'attendanceSheet',
+    sheetName: 'attendance',
     firstCol: 'A',
-    lastCol: 'BI'
+    lastCol: 'BK'
   })
 
   const entries = data.reduce(filterAndFormatEntries, [])
-  console.log(data.length, entries.length)
-  console.log(entries[0])
+  console.log(entries.at(0), entries.at(-1))
+  // console.log(data.length, entries.length)
+  // console.log(entries[0])
   await generateEmails(entries)
+  // await generateEmails([entries[0]])
 }
 
 main()
