@@ -1,10 +1,12 @@
 {
   "name": "gsconvert",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "createFromGS.js",
   "scripts": {
-    "start":"node createFromGS.js"
+    "start":"node createFromGS.js",
+    "start:bun": "bun createFromGS.js"
   },
   "keywords": [],
   "author": "",
