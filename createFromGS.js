@@ -1,12 +1,11 @@
-import {
-  getToken,
-  getGP,
-  getDFile,
-  getDataGS,
-  filterAndFormatEntries,
-  generateEmails
-} from './utils.js'
+import dotenv from 'dotenv'
+const env = dotenv.config()
+import { filterAndFormatEntries, generateEmails } from './absUtils.js'
+import { filterAndFormatGrades, generateGradingEmails, gradingCheck } from './gradesUtils.js'
+import { getToken } from './googleAPI.js'
+import { getGP, getDFile, getDataGS } from './utils.js'
 
+const SHEET_NAME = process.env.SHEET_NAME
 const main = async () => {
   const token = await getToken()
   const user = await getGP(token)
@@ -14,8 +13,8 @@ const main = async () => {
   //console.log(me)
 
   console.log('getting file!')
-
   const file = await getDFile()
+
   if (file)
     console.log(`
   kind: ${file.kind}
@@ -28,16 +27,26 @@ const main = async () => {
   // create query object
   const data = await getDataGS({
     spreadsheetId: file.id,
-    sheetName: 'attendance',
+    sheetName: SHEET_NAME,
     firstCol: 'A',
-    lastCol: 'BK'
+    lastCol: SHEET_NAME === 'attendance' ? 'BK' : 'BO'
   })
 
-  const entries = data.reduce(filterAndFormatEntries, [])
-  console.log(entries.at(0), entries.at(-1))
+  const entries = data.reduce(
+    SHEET_NAME === 'attendance' ? filterAndFormatEntries : filterAndFormatGrades,
+    []
+  )
+  // check grading examples
+  // gradingCheck(entries)
+  const emailGenerator = SHEET_NAME === 'attendance' ? generateEmails : generateGradingEmails
+
+  await emailGenerator(entries)
+
+  // check absence examples
+  // console.log(entries.at(0), entries.at(-1))
   // console.log(data.length, entries.length)
   // console.log(entries[0])
-  await generateEmails(entries)
+  // await generateEmails(entries)
   // await generateEmails([entries[0]])
 }
 
