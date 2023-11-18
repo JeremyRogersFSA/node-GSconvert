@@ -13,7 +13,7 @@ const addWorkshop = ({ entry, key, newObj }) => {
     const isGrading = entry[key] === 'g'
     const isMissing = entry[key] === ''
     newObj.ws[key] = isGrading
-      ? 'grading'
+      ? (newObj.missingWS--, 'grading')
       : isMissing
       ? 'missing'
       : value > 0

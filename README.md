@@ -57,3 +57,10 @@ To run the project, pick your options:
 - `bun createFromGS.js`
 
 ## Have Fun Perusing
+
+This is still a WIP. But have fun looking at how it works!
+
+__Things to do:__
+
+- Test if the fix for missingWS count works
+- Convert missing counts to simply be number of assignments in each ws/cc/cs object
