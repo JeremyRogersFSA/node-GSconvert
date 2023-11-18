@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 const env = dotenv.config()
-import { filterAndFormatEntries, generateEmails } from './absUtils.js'
+import { filterAndFormatEntries, generateAbsenceEmails } from './absUtils.js'
 import { filterAndFormatGrades, generateGradingEmails, gradingCheck } from './gradesUtils.js'
 import { getToken } from './googleAPI.js'
 import { getGP, getDFile, getDataGS } from './utils.js'
@@ -38,7 +38,7 @@ const main = async () => {
   )
   // check grading examples
   // gradingCheck(entries)
-  const emailGenerator = SHEET_NAME === 'attendance' ? generateEmails : generateGradingEmails
+  const emailGenerator = SHEET_NAME === 'attendance' ? generateAbsenceEmails : generateGradingEmails
 
   await emailGenerator(entries)
 

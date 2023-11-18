@@ -1,22 +1,8 @@
-import { itmEmails, absenceWords } from './utils'
+import { itmEmails, absenceWords, itmList } from './utils'
 import { gmail } from './googleAPI'
 
 export const createMessage = (
-  {
-    email,
-    cohort,
-    firstLast,
-    absent,
-    partial,
-    absences,
-    absenceRem,
-    ws,
-    cc,
-    cs,
-    missingWS,
-    missingCS,
-    missingCC
-  },
+  { email, cohort, firstLast, absent, partial, absences, absenceRem, ws, cc, cs },
   type
 ) => {
   const preamble = [
@@ -75,6 +61,11 @@ export const createMessage = (
       if (cs[`CS${i}`] === 'missing') CSmissing.push(i)
       if (cs[`CS${i}`] === 'incomplete') CSinc.push(i)
     }
+
+    const missingWS = WSmissing.length
+    const missingCC = CCmissing.length
+    const missingCS = CSmissing.length
+
     subject = `subject: FSA x ACC - Web Dev - Missing or Incomplete Assignments [[ACTION REQUIRED]]\n\n`
 
     body = `<p>Hello ${firstLast},</p>
@@ -83,11 +74,11 @@ export const createMessage = (
     <p>Missing Competency Checks: ${missingCC}</p>
     <p>Missing Career Simulations: ${missingCS}</p>
     <p style="font-weight: bold;">Missing Workshop Blocks:</p>
-    <p>${WSmissing.length ? WSmissing.join(', ') : 'none'}</p>
+    <p>${missingWS ? WSmissing.join(', ') : 'none'}</p>
     <p style="font-weight: bold;">Missing Competency Check Blocks:</p>
-    <p>${CCmissing.length ? CCmissing.join(', ') : 'none'}</p>
+    <p>${missingCC ? CCmissing.join(', ') : 'none'}</p>
     <p style="font-weight: bold;">Missing Career Simulation Blocks:</p>
-    <p>${CSmissing.length ? CSmissing.join(', ') : 'none'}</p>
+    <p>${missingCS ? CSmissing.join(', ') : 'none'}</p>
     <p style="font-weight: bold;">Incomplete Workshop Blocks:</p>
     <p>${WSinc.length ? WSinc.join(', ') : 'none'}</p>
     <p style="font-weight: bold;">Incomplete Competency Check Blocks:</p>

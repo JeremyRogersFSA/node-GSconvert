@@ -19,6 +19,8 @@ KEY=<your_API_Key>
 CS_OFFSET=3
 C_BLOCK=23
 SHEET_NAME=grades
+DAY_ONE=11-13-2023
+DAY_TWO=11-17-2023
 ```
 
 `CLIENT_ID` and `CLIENT_SECRET` are from your google app page, after registering a server side app.
@@ -32,6 +34,8 @@ SHEET_NAME=grades
 `C_BLOCK` is current DUE block, used in early exits and calculations for missing blocks.
 
 `SHEET_NAME` is the google sheet name to target for the data scraping phase.
+
+`DAY_ONE` and `DAY_TWO` are used to see if a student has been absent in the days listed here. Date format `mm-dd-yyyy` to align with other parts of the app, Google Sheets format, DateTime object, etc.
 
 ### Node or Bun
 
@@ -63,4 +67,4 @@ This is still a WIP. But have fun looking at how it works!
 __Things to do:__
 
 - Test if the fix for missingWS count works
-- Convert missing counts to simply be number of assignments in each ws/cc/cs object
+-

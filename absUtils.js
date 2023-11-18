@@ -1,3 +1,5 @@
+import { createMessage, createDraft } from './emails'
+
 export const filterAndFormatEntries = (listOfEntries, entry) => {
   const isWithdrawn = entry.withdrawn === 'TRUE'
   if (!isWithdrawn) {
@@ -11,7 +13,7 @@ export const filterAndFormatEntries = (listOfEntries, entry) => {
       name: entry.name,
       firstLast: entry.firstLast,
       email: entry.email,
-      cohort: '2308-' + entry.cohort,
+      cohort: entry.cohort,
       absences: isNaN(abs) ? 0 : abs,
       excuses: isNaN(ex) ? 0 : ex,
       attended: [],
@@ -37,7 +39,7 @@ export const filterAndFormatEntries = (listOfEntries, entry) => {
   return listOfEntries
 }
 
-export const generateEmails = async (entries) => {
+export const generateAbsenceEmails = async (entries) => {
   let emails = 0
   let overAbsenceTest = undefined
   let normalAbsenceTest = undefined
@@ -47,14 +49,14 @@ export const generateEmails = async (entries) => {
     // console.log('qualifies - has absences')
     const { firstLast, email, cohort, absences, absent, partial } = entry
     const lastAbsence = absent.some(
-      (date) => date === '11-06-2023' || date === '11-09-2023' || date === '11-13-2023'
+      (date) => date === process.env.DAY_ONE || date === process.env.DAY_TWO
     )
     const absenceRem = 10 - absences
     const isOverAbsences = absenceRem < 0
 
     if (isOverAbsences) {
       console.log(`start overAbsences to ${firstLast} in ${cohort}`)
-      const message = createAbsMessage({ email, cohort, firstLast, absent, partial }, 'overAbsence')
+      const message = createMessage({ email, cohort, firstLast, absent, partial }, 'overAbsence')
       if (!overAbsenceTest) overAbsenceTest = '-------\n\n' + message
       const raw = Buffer.from(message).toString('base64')
       await createDraft(raw, cohort)
@@ -64,7 +66,7 @@ export const generateEmails = async (entries) => {
       console.log(`start absences to ${firstLast} in ${cohort}`)
       // console.log(absences, absent.at(-1))
       // normal message about absences
-      const message = createAbsMessage(
+      const message = createMessage(
         { email, cohort, firstLast, absent, partial, absenceRem, absences },
         'absence'
       )
