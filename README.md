@@ -10,7 +10,7 @@ After pulling that data, this app organizes it and creates a draft email. The em
 
 ### structure your `.env` like this
 
-```bash
+```conf
 CLIENT_ID=<yourid>.apps.googleusercontent.com
 CLIENT_SECRET=<your_secret>
 REDIRECT_URI=http://localhost
