@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 const env = dotenv.config()
 import { filterAndFormatEntries, generateAbsenceEmails } from './absUtils.js'
-import { filterAndFormatGrades, generateGradingEmails, gradingCheck } from './gradesUtils.js'
+import { filterAndFormatGrades, generateGradingEmails } from './gradesUtils.js'
 import { getToken } from './googleAPI.js'
 import { getGP, getDFile, getDataGS } from './utils.js'
 

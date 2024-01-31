@@ -2,13 +2,13 @@ import { sheets, drive } from './googleAPI'
 
 export const domain = '@fullstackacademy.com'
 export const itmEmails = {
-  '2308-ACC-ET-WEB-PT-A': `<michael.pascuzzi${domain}>, <torie.kim${domain}>, <stephanie.page${domain}>`,
+  '2308-ACC-ET-WEB-PT-A': `<michael.pascuzzi${domain}>, <torie.kim${domain}>, <Kemp.Atkinson${domain}>`,
   '2308-ACC-ET-WEB-PT-B': `<Danielle.Williams${domain}>, <morgen.diaz${domain}>, <nan.wroblewski${domain}>`,
   '2308-ACC-PT-WEB-PT-A': `<liz.hoppstetter${domain}>, <kavin.thanesjesdapong${domain}>, <edwin.marshall${domain}>`,
   '2308-ACC-PT-WEB-PT-B': `<james.yeates${domain}>, <april.ai${domain}>, <thomas.jeng${domain}>`
 }
 export const itmList = {
-  '2308-ACC-ET-WEB-PT-A': 'Michael, Torie, or Stephanie',
+  '2308-ACC-ET-WEB-PT-A': 'Michael, Torie, or Kemp',
   '2308-ACC-ET-WEB-PT-B': 'Danielle, Nan, or Morgen',
   '2308-ACC-PT-WEB-PT-A': 'Liz, Kavin, or Edwin',
   '2308-ACC-PT-WEB-PT-B': 'James, April, or Thomas'
